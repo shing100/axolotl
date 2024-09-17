@@ -137,7 +137,7 @@ class BasePlugin:
 
     def add_callbacks_pre_trainer(self, cfg, model):
         """
-        Adds callbacks to the trainer before training.
+        setup callbacks before creating the trainer.
 
         Parameters:
         cfg (dict): The configuration for the plugin.
@@ -149,14 +149,15 @@ class BasePlugin:
 
     def add_callbacks_post_trainer(self, cfg, trainer):
         """
-        Adds callbacks to the trainer after training.
+        Adds callbacks to the trainer after creating the trainer.
+        This is useful for callbacks that require access to the model or trainer.
 
         Parameters:
         cfg (dict): The configuration for the plugin.
         trainer (object): The trainer object for training.
 
         Returns:
-        List[callable]: A list of callback functions to be added to the TrainingArgs
+        List[callable]: A list of callback functions to be added
         """
 
     def post_train(self, cfg, model):
