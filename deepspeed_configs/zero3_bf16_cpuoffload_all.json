@@ -33,6 +33,7 @@
     "hysteresis": 2,
     "min_loss_scale": 1
   },
+  "zero3_init_flag": "true",
   "gradient_accumulation_steps": "auto",
   "gradient_clipping": "auto",
   "train_batch_size": "auto",
