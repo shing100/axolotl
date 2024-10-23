@@ -557,7 +557,7 @@ def load_model(
     #             )
     #         else:
     #             model_kwargs["device_map"] = "cuda:" + str(torch.cuda.current_device())
-    LOG.info(f"Deepspeec Zero3 enabled? {is_deepspeed_zero3_enabled()}")
+    LOG.info(f"Deepspeed Zero3 enabled? {is_deepspeed_zero3_enabled()}")
     if is_deepspeed_zero3_enabled():
         del model_kwargs["device_map"]
 
