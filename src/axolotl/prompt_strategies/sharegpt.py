@@ -55,6 +55,30 @@ def register_llama3_template(system_message=None):
     )
 
 
+def register_exaone_template(system_message=None):
+    system_message = system_message or "You are a helpful assistant."
+    register_conv_template(
+        Conversation(
+            name="exaone",
+            system_template="[|system|]{system_message}[|endofturn|]\n",
+            system_message=system_message,
+            roles=("[|user|]", "[|assistant|]"),
+            sep_style=SeparatorStyle.EXAONE,
+            sep="[|endofturn|]\n",
+        )
+    )
+    register_conv_template(
+        Conversation(
+            name="exaone_glaive",
+            system_template="[|system|]{system_message}[|endofturn|]\n",
+            system_message=system_message,
+            roles=("[|user|]", "[|assistant|]", "[|tool|]"),
+            sep_style=SeparatorStyle.EXAONE,
+            sep="[|endofturn|]\n",
+        )
+    )
+
+
 def build_loader(
     tokenization_strategy_cls: Type["ShareGPTPromptTokenizingStrategy"],
     prompter_cls: Type["ShareGPTPrompterV2"],

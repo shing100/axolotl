@@ -22,6 +22,7 @@ from axolotl.integrations.base import PluginManager
 from axolotl.prompt_strategies.sharegpt import (
     register_chatml_template,
     register_llama3_template,
+    register_exaone_template,
 )
 from axolotl.train import train
 
@@ -57,6 +58,14 @@ def do_train(cfg, cli_args) -> None:
         register_llama3_template(cfg.default_system_message)
     else:
         register_llama3_template()
+
+    if cfg.chat_template == "exaone" and cfg.default_system_message:
+        LOG.info(
+            f"ExaOne set. Adding default system message: {cfg.default_system_message}"
+        )
+        register_exaone_template(cfg.default_system_message)
+    else:
+        register_exaone_template()
 
     if cfg.rl:  # and cfg.rl != "orpo":
         dataset_meta = load_rl_datasets(cfg=cfg, cli_args=cli_args)
