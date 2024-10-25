@@ -71,9 +71,10 @@ class AlpacaPrompter(Prompter):
             )
             self.system_format = "<|system|>\n{system}<|end|>\n"
         elif self.prompt_style == PromptStyle.EXAONE.value:
-            self.turn_format = "[|user|]\n{instruction}\n{input}\n[|assistant|]"
-            self.turn_no_input_format = "[|user|]\n{instruction}\n[|assistant|]"
-            self.system_format = "[|system|]\n{system}[|endofturn|]"
+            self.turn_format = "[|user|]{instruction}\n{input}\n[|assistant|]"
+            self.turn_no_input_format = "[|user|]{instruction}\n[|assistant|]"
+            self.system_format = "[|system|]{system}[|endofturn|]\n"
+
 
     def _build_result(self, instruction, input_text, output):
         # returns the full prompt from instruction and optional input
@@ -92,7 +93,7 @@ class AlpacaPrompter(Prompter):
             ) + self.turn_no_input_format.format(instruction=instruction)
         if output:
             res = f"{res}{output}"
-
+        
         return res
 
     def build_prompt(

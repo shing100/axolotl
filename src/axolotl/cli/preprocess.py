@@ -64,7 +64,7 @@ def do_cli(config: Union[Path, str] = Path("examples/"), **kwargs):
     elif parsed_cfg.chat_template == "exaone":
         if parsed_cfg.default_system_message:
             LOG.info(
-                f"ExaOne set. Adding default system message: {parsed_cfg.default_system_message}"
+                f"EXAONE 3.0 set. Adding default system message: {parsed_cfg.default_system_message}"
             )
             register_exaone_template(parsed_cfg.default_system_message)
         else:
