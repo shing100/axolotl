@@ -83,6 +83,9 @@ def build_loader(
     default_conversation: Optional[str] = None,
 ):
     def _load(tokenizer, cfg, ds_cfg: Optional[Dict[str, Any]] = None):
+        LOG.warning(
+            "sharegpt type support will be deprecated in the next release of Axolotl. Please use chat_template instead. https://axolotl-ai-cloud.github.io/axolotl/docs/dataset-formats/conversation.html#chat_template",
+        )
         conversation = (
             ds_cfg["conversation"]
             if ds_cfg and "conversation" in ds_cfg

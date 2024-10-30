@@ -14,7 +14,7 @@ Features:
 - Integrated with xformer, flash attention, [liger kernel](https://github.com/linkedin/Liger-Kernel), rope scaling, and multipacking
 - Works with single GPU or multiple GPUs via FSDP or Deepspeed
 - Easily run with Docker locally or on the cloud
-- Log results and optionally checkpoints to wandb or mlflow
+- Log results and optionally checkpoints to wandb, mlflow or Comet
 - And more!
 
 <a href="https://www.phorm.ai/query?projectId=e315ba4a-4e14-421f-ab05-38a1f9076f25">
@@ -121,7 +121,7 @@ Features:
 
 Get started with Axolotl in just a few steps! This quickstart guide will walk you through setting up and running a basic fine-tuning task.
 
-**Requirements**: Python >=3.10 and Pytorch >=2.1.1.
+**Requirements**: Nvidia GPU (Ampere architecture or newer for `bf16` and Flash Attention), Python >=3.10 and PyTorch >=2.3.1.
 
 ```bash
 git clone https://github.com/axolotl-ai-cloud/axolotl
@@ -383,7 +383,7 @@ See [examples](examples) for quick start. It is recommended to duplicate and mod
         - typescript
       type: ... # unimplemented custom format
 
-      # fastchat conversation
+      # fastchat conversation (deprecation soon, use chat_template https://axolotl-ai-cloud.github.io/axolotl/docs/dataset-formats/conversation.html#chat_template)
       # See 'conversation' options: https://github.com/lm-sys/FastChat/blob/main/fastchat/conversation.py
     - path: ...
       type: sharegpt
@@ -513,6 +513,22 @@ wandb_entity:
 wandb_watch:
 wandb_name:
 wandb_log_model:
+```
+
+##### Comet Logging
+
+Make sure your `COMET_API_KEY` environment variable is set (recommended) or you login to wandb with `comet login`.
+
+- wandb options
+```yaml
+use_comet:
+comet_api_key:
+comet_workspace:
+comet_project_name:
+comet_experiment_key:
+comet_mode:
+comet_online:
+comet_experiment_config:
 ```
 
 ##### Special Tokens

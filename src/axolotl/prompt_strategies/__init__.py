@@ -9,8 +9,12 @@ from axolotl.prompt_strategies.user_defined import UserDefinedDatasetConfig
 LOG = logging.getLogger("axolotl.prompt_strategies")
 
 
-def load(strategy, tokenizer, cfg, ds_cfg):
+def load(strategy, tokenizer, cfg, ds_cfg, processor=None):
     try:
+        if strategy == "messages":
+            from .messages import load as messages_load
+
+            return messages_load(tokenizer, cfg, ds_cfg, processor=processor)
         load_fn = "load"
         if strategy.split(".")[-1].startswith("load_"):
             load_fn = strategy.split(".")[-1]
@@ -24,9 +28,12 @@ def load(strategy, tokenizer, cfg, ds_cfg):
             sig = inspect.signature(func)
             if "ds_cfg" in sig.parameters:
                 load_kwargs["ds_cfg"] = ds_cfg
+            if "processor" in sig.parameters:
+                load_kwargs["processor"] = processor
         return func(tokenizer, cfg, **load_kwargs)
     except ModuleNotFoundError:
         return None
     except Exception as exc:  # pylint: disable=broad-exception-caught
         LOG.error(f"Failed to load prompt strategy `{strategy}`: {str(exc)}")
-        return None
+        raise exc
+    return None

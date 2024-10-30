@@ -19,10 +19,12 @@ from transformers import PreTrainedTokenizerBase
 from axolotl.common.const import DEFAULT_DATASET_PREPARED_PATH
 from axolotl.datasets import TokenizedPromptDataset
 from axolotl.prompt_strategies import load
+from axolotl.prompt_strategies.bradley_terry import load as bradley_terry_load
 from axolotl.prompt_tokenizers import (
     AlpacaMultipleChoicePromptTokenizingStrategy,
     AlpacaPromptTokenizingStrategy,
     AlpacaReflectionPTStrategy,
+    DatasetWrappingStrategy,
     GPTeacherPromptTokenizingStrategy,
     JeopardyPromptTokenizingStrategy,
     OpenAssistantPromptTokenizingStrategy,
@@ -51,20 +53,31 @@ from axolotl.utils.trainer import (
 LOG = logging.getLogger("axolotl")
 
 
-def prepare_dataset(cfg, tokenizer):
+def prepare_dataset(cfg, tokenizer, processor=None):
     prompters = []
     if not cfg.pretraining_dataset:
         with zero_first(is_local_main_process()):
             if cfg.test_datasets:
                 train_dataset, _, prompters = load_prepare_datasets(
-                    tokenizer, cfg, DEFAULT_DATASET_PREPARED_PATH, split="train"
+                    tokenizer,
+                    cfg,
+                    DEFAULT_DATASET_PREPARED_PATH,
+                    split="train",
+                    processor=processor,
                 )
                 _, eval_dataset, _ = load_prepare_datasets(
-                    tokenizer, cfg, DEFAULT_DATASET_PREPARED_PATH, split="test"
+                    tokenizer,
+                    cfg,
+                    DEFAULT_DATASET_PREPARED_PATH,
+                    split="test",
+                    processor=processor,
                 )
             else:
                 train_dataset, eval_dataset, prompters = load_prepare_datasets(
-                    tokenizer, cfg, DEFAULT_DATASET_PREPARED_PATH
+                    tokenizer,
+                    cfg,
+                    DEFAULT_DATASET_PREPARED_PATH,
+                    processor=processor,
                 )
     else:
         path = cfg.pretraining_dataset
@@ -123,6 +136,7 @@ def load_tokenized_prepared_datasets(
     cfg,
     default_dataset_prepared_path,
     split="train",
+    processor=None,
 ) -> Tuple[DatasetDict, List[Prompter]]:
     cfg_datasets = cfg.test_datasets if split == "test" else cfg.datasets
     tokenizer_name = cfg.tokenizer_config
@@ -180,6 +194,7 @@ def load_tokenized_prepared_datasets(
         cfg.dataset_prepared_path
         and any(prepared_ds_path.glob("*"))
         and not cfg.is_preprocess
+        and not cfg.skip_prepare_dataset
     ):
         LOG.info(f"Loading prepared dataset from disk at {prepared_ds_path}...")
         dataset = load_from_disk(str(prepared_ds_path))
@@ -229,6 +244,7 @@ def load_tokenized_prepared_datasets(
                     name=config_dataset.name,
                     streaming=True,
                     token=use_auth_token,
+                    revision=config_dataset.revision,
                 )
                 ds_from_hub = True
             except (FileNotFoundError, ConnectionError, HFValidationError, ValueError):
@@ -333,6 +349,7 @@ def load_tokenized_prepared_datasets(
                     streaming=False,
                     data_files=config_dataset.data_files,
                     token=use_auth_token,
+                    revision=config_dataset.revision,
                     **load_ds_kwargs,
                 )
             elif ds_from_cloud and remote_file_system:
@@ -367,6 +384,7 @@ def load_tokenized_prepared_datasets(
                         repo_id=config_dataset.path,
                         repo_type="dataset",
                         filename=config_dataset.data_files,
+                        revision=config_dataset.revision,
                     )
                 elif isinstance(config_dataset.data_files, list):
                     fp = []
@@ -376,6 +394,7 @@ def load_tokenized_prepared_datasets(
                                 repo_id=config_dataset.path,
                                 repo_type="dataset",
                                 filename=file,
+                                revision=config_dataset.revision,
                             )
                         )
                 else:
@@ -420,15 +439,19 @@ def load_tokenized_prepared_datasets(
                 config_dataset=config_dataset,
                 tokenizer=tokenizer,
                 cfg=cfg,
-                dataset=ds,
                 d_base_type=d_base_type,
+                dataset=ds,
                 d_prompt_style=d_prompt_style,
+                processor=processor,
             )
             datasets.append(dataset_wrapper)
             prompters.append(dataset_prompter)
 
-        LOG.info("merging datasets")
-        dataset = concatenate_datasets(datasets)
+        if len(datasets) == 1:
+            dataset = datasets[0]
+        else:
+            LOG.info("merging datasets")
+            dataset = concatenate_datasets(datasets)
 
         if len(datasets) > 1:
             if cfg.shuffle_merged_datasets:
@@ -437,9 +460,10 @@ def load_tokenized_prepared_datasets(
             else:
                 LOG.debug("NOT shuffling merged datasets")
 
-        dataset, _ = process_datasets_for_packing(cfg, dataset, None)
+        if cfg.sample_packing and not cfg.skip_prepare_dataset:
+            dataset, _ = process_datasets_for_packing(cfg, dataset, None)
 
-        if cfg.local_rank == 0:
+        if cfg.local_rank == 0 and not cfg.skip_prepare_dataset:
             LOG.info(f"Saving merged prepared dataset to disk... {prepared_ds_path}")
             dataset.save_to_disk(str(prepared_ds_path))
             if cfg.push_dataset_to_hub:
@@ -478,9 +502,14 @@ def load_prepare_datasets(
     cfg,
     default_dataset_prepared_path,
     split="train",
+    processor=None,
 ) -> Tuple[Dataset, Dataset, List[Prompter]]:
     dataset, prompters = load_tokenized_prepared_datasets(
-        tokenizer, cfg, default_dataset_prepared_path, split=split
+        tokenizer,
+        cfg,
+        default_dataset_prepared_path,
+        split=split,
+        processor=processor,
     )
 
     if cfg.dataset_shard_num and cfg.dataset_shard_idx is not None:
@@ -546,6 +575,7 @@ def get_dataset_wrapper(
     d_base_type,
     dataset,
     d_prompt_style=None,
+    processor=None,  # pylint: disable=unused-argument
 ):
     dataset_wrapper = None
     dataset_prompter = None
@@ -578,13 +608,31 @@ def get_dataset_wrapper(
             dataset,
             **ds_kwargs,
         )
-    elif ds_strategy := load(config_dataset.type, tokenizer, cfg, config_dataset):
+    elif cfg.skip_prepare_dataset:
+        dataset_wrapper = dataset
+    elif ds_strategy := config_dataset.type.startswith(
+        "bradley_terry"
+    ) and bradley_terry_load(
+        config_dataset.type.split(".", 1)[1], tokenizer, cfg, config_dataset
+    ):
         dataset_prompter = UnsupportedPrompter()
         dataset_wrapper = TokenizedPromptDataset(
             ds_strategy,
             dataset,
             **ds_kwargs,
         )
+    elif ds_strategy := load(
+        config_dataset.type, tokenizer, cfg, config_dataset, processor=processor
+    ):
+        if isinstance(ds_strategy, DatasetWrappingStrategy):
+            dataset_wrapper = ds_strategy.wrap_dataset(dataset, **ds_kwargs)
+        else:
+            dataset_prompter = UnsupportedPrompter()
+            dataset_wrapper = TokenizedPromptDataset(
+                ds_strategy,
+                dataset,
+                **ds_kwargs,
+            )
     elif d_base_type == "alpaca":
         dataset_prompter = AlpacaPrompter(d_prompt_style)
         ds_strategy = AlpacaPromptTokenizingStrategy(

@@ -8,9 +8,16 @@ import logging
 import os
 from enum import Enum
 from importlib.metadata import version
-from typing import Any, Dict, List, Literal, Optional, Tuple, Union
+from typing import Annotated, Any, Dict, List, Literal, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, conlist, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    StringConstraints,
+    conlist,
+    field_validator,
+    model_validator,
+)
 from transformers import SchedulerType
 from transformers.training_args import OptimizerNames
 
@@ -19,6 +26,37 @@ from axolotl.utils.config.models.internals import GPUCapabilities
 LOG = logging.getLogger("axolotl.utils.config.models.input")
 
 SUPPORTED_METRICS = {"sacrebleu", "comet", "ter", "chrf", "perplexity"}
+
+
+class RLType(str, Enum):
+    """RL trainer type configuration subset"""
+
+    dpo = "dpo"  # pylint: disable=invalid-name
+    ipo = "ipo"  # pylint: disable=invalid-name
+    orpo = "orpo"  # pylint: disable=invalid-name
+    kto = "kto"  # pylint: disable=invalid-name
+    simpo = "simpo"  # pylint: disable=invalid-name
+
+
+class ChatTemplate(str, Enum):
+    """Chat templates configuration subset"""
+
+    alpaca = "alpaca"  # pylint: disable=invalid-name
+    chatml = "chatml"  # pylint: disable=invalid-name
+    mistral_v1 = "mistral_v1"  # pylint: disable=invalid-name
+    mistral_v2v3 = "mistral_v2v3"  # pylint: disable=invalid-name
+    mistral_v3_tekken = "mistral_v3_tekken"  # pylint: disable=invalid-name
+    gemma = "gemma"  # pylint: disable=invalid-name
+    cohere = "cohere"  # pylint: disable=invalid-name
+    llama3 = "llama3"  # pylint: disable=invalid-name
+    llama3_2_vision = "llama3_2_vision"  # pylint: disable=invalid-name
+    phi_3 = "phi_3"  # pylint: disable=invalid-name
+    phi_35 = "phi_35"  # pylint: disable=invalid-name
+    deepseek_v2 = "deepseek_v2"  # pylint: disable=invalid-name
+    jamba = "jamba"  # pylint: disable=invalid-name
+    jinja = "jinja"  # pylint: disable=invalid-name
+    qwen_25 = "qwen_25"  # pylint: disable=invalid-name
+    tokenizer_default = "tokenizer_default"  # pylint: disable=invalid-name
 
 
 class DeprecatedParameters(BaseModel):
@@ -102,14 +140,22 @@ class SFTDataset(BaseModel):
     path: Optional[str] = None
     split: Optional[str] = None
     type: Optional[Union[str, UserDefinedPrompterType]] = None
+    input_transform: Optional[str] = None
     shards: Optional[int] = None
     conversation: Optional[str] = None
-    chat_template: Optional[str] = None
+    # Do not make this too strict or it will break the validator to choose different dataset class
+    chat_template: Optional[
+        Union[
+            ChatTemplate,
+            str,
+        ]
+    ] = None
+    chat_template_jinja: Optional[str] = None
     data_files: Optional[Union[str, List[str]]] = None
+    input_format: Optional[str] = None
     name: Optional[str] = None
     ds_type: Optional[str] = None
     train_on_split: Optional[str] = None
-
     field: Optional[str] = None
     field_human: Optional[str] = None
     field_model: Optional[str] = None
@@ -120,11 +166,31 @@ class SFTDataset(BaseModel):
     message_field_training_detail: Optional[str] = None
     roles_to_train: Optional[List[str]] = None
     train_on_eos: Optional[str] = None
-
     roles: Optional[Dict[str, List[str]]] = None
     drop_system_message: Optional[bool] = None
-
     trust_remote_code: Optional[bool] = False
+    revision: Optional[str] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_chat_template_config(cls, data):
+        # Set chat_template to tokenizer_default if not set
+        if data.get("type") == "chat_template" and not data.get("chat_template"):
+            data["chat_template"] = ChatTemplate.tokenizer_default
+
+        # if chat_template is set to jinja, chat_template_jinja is required
+        if data.get("chat_template") == ChatTemplate.jinja and not data.get(
+            "chat_template_jinja"
+        ):
+            raise ValueError(
+                "chat_template_jinja is required when chat_template is set to jinja"
+            )
+
+        # If chat_template_jinja is set, set chat_template to jinja
+        if data.get("chat_template_jinja") and not data.get("chat_template"):
+            data["chat_template"] = ChatTemplate.jinja
+
+        return data
 
 
 class UserDefinedDPOType(BaseModel):
@@ -146,6 +212,7 @@ class DPODataset(BaseModel):
     split: Optional[str] = None
     type: Optional[Union[UserDefinedDPOType, str]] = None
     data_files: Optional[List[str]] = None
+    revision: Optional[str] = None
 
 
 class UserDefinedKTOType(BaseModel):
@@ -167,31 +234,7 @@ class KTODataset(BaseModel):
     type: Optional[Union[UserDefinedKTOType, str]] = None
     data_files: Optional[List[str]] = None
     trust_remote_code: Optional[bool] = False
-
-
-class RLType(str, Enum):
-    """RL trainer type configuration subset"""
-
-    dpo = "dpo"  # pylint: disable=invalid-name
-    ipo = "ipo"  # pylint: disable=invalid-name
-    orpo = "orpo"  # pylint: disable=invalid-name
-    kto = "kto"  # pylint: disable=invalid-name
-    simpo = "simpo"  # pylint: disable=invalid-name
-
-
-class ChatTemplate(str, Enum):
-    """Chat templates configuration subset"""
-
-    alpaca = "alpaca"  # pylint: disable=invalid-name
-    chatml = "chatml"  # pylint: disable=invalid-name
-    inst = "inst"  # pylint: disable=invalid-name
-    gemma = "gemma"  # pylint: disable=invalid-name
-    cohere = "cohere"  # pylint: disable=invalid-name
-    llama3 = "llama3"  # pylint: disable=invalid-name
-    phi_3 = "phi_3"  # pylint: disable=invalid-name
-    deepseek_v2 = "deepseek_v2"  # pylint: disable=invalid-name
-    jamba = "jamba"  # pylint: disable=invalid-name
-    exaone = "exaone"  # pylint: disable=invalid-name
+    revision: Optional[str] = None
 
 
 class LoftQConfig(BaseModel):
@@ -228,11 +271,12 @@ class LoraConfig(BaseModel):
     lora_r: Optional[int] = None
     lora_alpha: Optional[int] = None
     lora_fan_in_fan_out: Optional[bool] = None
-    lora_target_modules: Optional[List[str]] = None
+    lora_target_modules: Optional[Union[str, List[str]]] = None
     lora_target_linear: Optional[bool] = None
     lora_modules_to_save: Optional[List[str]] = None
     lora_dropout: Optional[float] = 0.0
     peft_layers_to_transform: Optional[List[int]] = None
+    peft_layers_pattern: Optional[List[str]] = None
     peft: Optional[PeftConfig] = None
     peft_use_dora: Optional[bool] = None
     peft_use_rslora: Optional[bool] = None
@@ -298,6 +342,13 @@ class LoraConfig(BaseModel):
                     raise ValueError("Require cfg.load_in_4bit to be True for qlora")
         return self
 
+    @field_validator("loraplus_lr_embedding")
+    @classmethod
+    def convert_loraplus_lr_embedding(cls, loraplus_lr_embedding):
+        if loraplus_lr_embedding and isinstance(loraplus_lr_embedding, str):
+            loraplus_lr_embedding = float(loraplus_lr_embedding)
+        return loraplus_lr_embedding
+
 
 class ReLoRAConfig(BaseModel):
     """ReLoRA configuration subset"""
@@ -320,6 +371,9 @@ class ModelInputConfig(BaseModel):
     tokenizer_legacy: Optional[bool] = None
     tokenizer_type: Optional[str] = Field(
         default=None, metadata={"help": "transformers tokenizer class"}
+    )
+    processor_type: Optional[str] = Field(
+        default=None, metadata={"help": "transformers processor class"}
     )
     trust_remote_code: Optional[bool] = None
 
@@ -432,6 +486,7 @@ class MLFlowConfig(BaseModel):
     use_mlflow: Optional[bool] = None
     mlflow_tracking_uri: Optional[str] = None
     mlflow_experiment_name: Optional[str] = None
+    mlflow_run_name: Optional[str] = None
     hf_mlflow_log_artifacts: Optional[bool] = None
 
 
@@ -477,6 +532,19 @@ class WandbConfig(BaseModel):
         return data
 
 
+class CometConfig(BaseModel):
+    """Comet configuration subset"""
+
+    use_comet: Optional[bool] = None
+    comet_api_key: Optional[str] = None
+    comet_workspace: Optional[str] = None
+    comet_project_name: Optional[str] = None
+    comet_experiment_key: Optional[str] = None
+    comet_mode: Optional[str] = None
+    comet_online: Optional[bool] = None
+    comet_experiment_config: Optional[Dict[str, Any]] = None
+
+
 class GradioConfig(BaseModel):
     """Gradio configuration subset"""
 
@@ -497,6 +565,7 @@ class AxolotlInputConfig(
     HyperparametersConfig,
     WandbConfig,
     MLFlowConfig,
+    CometConfig,
     LISAConfig,
     GradioConfig,
     RemappedParameters,
@@ -514,8 +583,10 @@ class AxolotlInputConfig(
     resume_from_checkpoint: Optional[str] = None
     auto_resume_from_checkpoints: Optional[bool] = None
     resize_token_embeddings_to_32x: Optional[bool] = None
+    mean_resizing_embeddings: Optional[bool] = False
 
     rl: Optional[RLType] = None
+    reward_model: Optional[bool] = None
 
     datasets: Optional[conlist(Union[SFTDataset, DPODataset, KTODataset], min_length=1)] = None  # type: ignore
     test_datasets: Optional[conlist(Union[SFTDataset, DPODataset, KTODataset], min_length=1)] = None  # type: ignore
@@ -523,6 +594,7 @@ class AxolotlInputConfig(
     dataset_prepared_path: Optional[str] = None
     dataset_shard_num: Optional[int] = None
     dataset_shard_idx: Optional[int] = None
+    skip_prepare_dataset: Optional[bool] = False
 
     pretraining_dataset: Optional[  # type: ignore
         conlist(Union[PretrainingDataset, SFTDataset], min_length=1)
@@ -681,7 +753,13 @@ class AxolotlInputConfig(
     gpu_memory_limit: Optional[Union[int, str]] = None
     low_cpu_mem_usage: Optional[bool] = None
 
-    chat_template: Optional[ChatTemplate] = None
+    chat_template: Optional[
+        Union[
+            ChatTemplate,
+            Annotated[str, StringConstraints(pattern="^tokenizer_default_fallback_")],
+        ]
+    ] = None
+    chat_template_jinja: Optional[str] = None
     default_system_message: Optional[str] = None
 
     fix_untrained_tokens: Optional[bool] = None
@@ -792,6 +870,23 @@ class AxolotlInputConfig(
 
     @model_validator(mode="before")
     @classmethod
+    def check_chat_template_config(cls, data):
+        # if chat_template is set to jinja, chat_template_jinja is required
+        if data.get("chat_template") == ChatTemplate.jinja and not data.get(
+            "chat_template_jinja"
+        ):
+            raise ValueError(
+                "chat_template_jinja is required when chat_template is set to jinja"
+            )
+
+        # If chat_template_jinja is set, set chat_template to jinja
+        if data.get("chat_template_jinja") and not data.get("chat_template"):
+            data["chat_template"] = ChatTemplate.jinja
+
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
     def check_sample_packing_wo_flash(cls, data):
         if (
             data.get("sample_packing")
@@ -818,6 +913,17 @@ class AxolotlInputConfig(
             LOG.warning(
                 "`pad_to_sequence_len: true` is recommended when using sample_packing"
             )
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def hint_reward_model_pad(cls, data):
+        if data.get("reward_model") and not data.get("pad_to_sequence_len"):
+            LOG.warning(
+                "`pad_to_sequence_len: true` is recommended when using reward_model"
+            )
+            if data.get("pad_to_sequence_len") is None:
+                data["pad_to_sequence_len"] = True
         return data
 
     @model_validator(mode="before")
@@ -953,6 +1059,26 @@ class AxolotlInputConfig(
                 "evaluation_strategy must be empty or set to `steps` when used with evals_per_epoch."
             )
 
+        if data.get("do_bench_eval") and not (
+            data.get("evals_per_epoch") or data.get("eval_steps")
+        ):
+            raise ValueError(
+                "do_bench_eval requires evals_per_epoch or eval_steps to be set."
+            )
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_test_datasets_bench(cls, data):
+        if (
+            data.get("do_bench_eval")
+            and not data.get("test_datasets")
+            and not data.get("val_set_size")
+        ):
+            LOG.warning(
+                "`do_bench_eval` needs a test dataset to run evals, adding an empty test_dataset."
+            )
+            data["test_datasets"] = [{"path": "axolotl-ai-co/empty-test-ds"}]
         return data
 
     @model_validator(mode="before")
@@ -992,6 +1118,18 @@ class AxolotlInputConfig(
 
     @model_validator(mode="before")
     @classmethod
+    def check_mm_prepare(cls, data):
+        if data.get("skip_prepare_dataset"):
+            if data.get("remove_unused_columns") is None:
+                LOG.info(
+                    "setting `remove_unused_columns: false` for skip_prepare_dataset"
+                )
+                data["remove_unused_columns"] = False
+
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
     def check_warmup(cls, data):
         if data.get("warmup_steps") and data.get("warmup_ratio"):
             raise ValueError("warmup_steps and warmup_ratio are mutually exclusive")
@@ -1017,10 +1155,18 @@ class AxolotlInputConfig(
         return neftune_noise_alpha
 
     @model_validator(mode="after")
-    def check(self):
+    def check_rl_beta(self):
         if self.dpo_beta and not self.rl_beta:
             self.rl_beta = self.dpo_beta
             del self.dpo_beta
+        return self
+
+    @model_validator(mode="after")
+    def check_simpo_warmup(self):
+        if self.rl == "simpo" and self.warmup_ratio:
+            raise ValueError(
+                "warmup_ratio is not supported with the simpo trainer. Please use `warmup_steps` instead"
+            )
         return self
 
     @model_validator(mode="before")
@@ -1035,6 +1181,15 @@ class AxolotlInputConfig(
                 "`unfrozen_parameters` used with `peft_layers_to_transform` can have unexpected behavior."
             )
 
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_peft_layers_pattern(cls, data):
+        if data.get("peft_layers_pattern") and not data.get("peft_layers_to_transform"):
+            raise ValueError(
+                "peft_layers_pattern requires peft_layers_to_transform to be set"
+            )
         return data
 
     @model_validator(mode="after")

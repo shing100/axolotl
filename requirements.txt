@@ -1,12 +1,12 @@
 --extra-index-url https://huggingface.github.io/autogptq-index/whl/cu118/
 packaging==23.2
-peft==0.12.0
-transformers==4.44.2
-tokenizers>=0.19.1
-bitsandbytes==0.43.3
-accelerate==0.34.2
-datasets==2.20.0
-deepspeed==0.14.4
+peft==0.13.2
+transformers==4.46.0
+tokenizers>=0.20.1
+bitsandbytes==0.44.1
+accelerate==1.0.1
+datasets==3.0.1
+deepspeed==0.15.3
 pydantic==2.6.3
 addict
 fire
@@ -16,7 +16,7 @@ flash-attn==2.6.3
 sentencepiece
 wandb
 einops
-xformers==0.0.27
+xformers>=0.0.23.post1
 optimum==1.16.2
 hf_transfer
 colorama
@@ -34,7 +34,7 @@ tensorboard
 python-dotenv==1.0.1
 autoawq>=0.2.5
 triton>=2.3.0
-liger-kernel==0.2.1
+liger-kernel==0.3.0
 
 mamba-ssm==1.2.0.post1
 
@@ -43,6 +43,14 @@ s3fs>=2024.5.0
 gcsfs>=2024.5.0
 # adlfs
 
-trl==0.9.6
+trl @ git+https://github.com/huggingface/trl.git@31d02cfb795284591a084416b9dcb7bef5d08924
 zstandard==0.22.0
 fastcore
+
+# lm eval harness
+lm_eval==0.4.4
+langdetect==1.0.9
+immutabledict==4.2.0
+antlr4-python3-runtime==4.13.2
+
+torchao==0.5.0
