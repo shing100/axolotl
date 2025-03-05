@@ -6,9 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Hyper-optimized QLoRA finetuning for single GPUs">
 
-<title>Unsloth – Axolotl</title>
+<title>Installation – Axolotl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -130,7 +129,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fsdp_qlora.html">Advanced Features</a></li><li class="breadcrumb-item"><a href="../docs/unsloth.html">Unsloth</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/getting-started.html">Getting Started</a></li><li class="breadcrumb-item"><a href="../docs/installation.html">Installation</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -165,7 +164,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/installation.html" class="sidebar-item-text sidebar-link">
+  <a href="../docs/installation.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Installation</span></a>
   </div>
 </li>
@@ -358,7 +357,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/unsloth.html" class="sidebar-item-text sidebar-link active">
+  <a href="../docs/unsloth.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Unsloth</span></a>
   </div>
 </li>
@@ -432,26 +431,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
-  <li><a href="#installation" id="toc-installation" class="nav-link" data-scroll-target="#installation">Installation</a></li>
-  <li><a href="#usage" id="toc-usage" class="nav-link" data-scroll-target="#usage">Usage</a></li>
-  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
+  <li><a href="#sec-requirements" id="toc-sec-requirements" class="nav-link active" data-scroll-target="#sec-requirements"><span class="header-section-number">1</span> Requirements</a></li>
+  <li><a href="#sec-installation-methods" id="toc-sec-installation-methods" class="nav-link" data-scroll-target="#sec-installation-methods"><span class="header-section-number">2</span> Installation Methods</a>
+  <ul class="collapse">
+  <li><a href="#sec-pypi" id="toc-sec-pypi" class="nav-link" data-scroll-target="#sec-pypi"><span class="header-section-number">2.1</span> PyPI Installation (Recommended)</a></li>
+  <li><a href="#sec-edge-build" id="toc-sec-edge-build" class="nav-link" data-scroll-target="#sec-edge-build"><span class="header-section-number">2.2</span> Edge/Development Build</a></li>
+  <li><a href="#sec-docker" id="toc-sec-docker" class="nav-link" data-scroll-target="#sec-docker"><span class="header-section-number">2.3</span> Docker</a></li>
+  </ul></li>
+  <li><a href="#sec-cloud" id="toc-sec-cloud" class="nav-link" data-scroll-target="#sec-cloud"><span class="header-section-number">3</span> Cloud Environments</a>
+  <ul class="collapse">
+  <li><a href="#sec-cloud-gpu" id="toc-sec-cloud-gpu" class="nav-link" data-scroll-target="#sec-cloud-gpu"><span class="header-section-number">3.1</span> Cloud GPU Providers</a></li>
+  <li><a href="#sec-colab" id="toc-sec-colab" class="nav-link" data-scroll-target="#sec-colab"><span class="header-section-number">3.2</span> Google Colab</a></li>
+  </ul></li>
+  <li><a href="#sec-platform-specific" id="toc-sec-platform-specific" class="nav-link" data-scroll-target="#sec-platform-specific"><span class="header-section-number">4</span> Platform-Specific Instructions</a>
+  <ul class="collapse">
+  <li><a href="#sec-macos" id="toc-sec-macos" class="nav-link" data-scroll-target="#sec-macos"><span class="header-section-number">4.1</span> macOS</a></li>
+  <li><a href="#sec-windows" id="toc-sec-windows" class="nav-link" data-scroll-target="#sec-windows"><span class="header-section-number">4.2</span> Windows</a></li>
+  </ul></li>
+  <li><a href="#sec-env-managers" id="toc-sec-env-managers" class="nav-link" data-scroll-target="#sec-env-managers"><span class="header-section-number">5</span> Environment Managers</a>
+  <ul class="collapse">
+  <li><a href="#sec-conda" id="toc-sec-conda" class="nav-link" data-scroll-target="#sec-conda"><span class="header-section-number">5.1</span> Conda/Pip venv</a></li>
+  </ul></li>
+  <li><a href="#sec-troubleshooting" id="toc-sec-troubleshooting" class="nav-link" data-scroll-target="#sec-troubleshooting"><span class="header-section-number">6</span> Troubleshooting</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fsdp_qlora.html">Advanced Features</a></li><li class="breadcrumb-item"><a href="../docs/unsloth.html">Unsloth</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/getting-started.html">Getting Started</a></li><li class="breadcrumb-item"><a href="../docs/installation.html">Installation</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Unsloth</h1>
+<h1 class="title">Installation</h1>
 </div>
 
-<div>
-  <div class="description">
-    Hyper-optimized QLoRA finetuning for single GPUs
-  </div>
-</div>
 
 
 <div class="quarto-title-meta">
@@ -466,9 +478,84 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="overview" class="level3">
-<h3 class="anchored" data-anchor-id="overview">Overview</h3>
-<p>Unsloth provides hand-written optimized kernels for LLM finetuning that slightly improve speed and VRAM over standard industry baselines.</p>
+<p>This guide covers all the ways you can install and set up Axolotl for your environment.</p>
+<section id="sec-requirements" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="sec-requirements"><span class="header-section-number">1</span> Requirements</h2>
+<ul>
+<li>NVIDIA GPU (Ampere architecture or newer for <code>bf16</code> and Flash Attention) or AMD GPU</li>
+<li>Python ≥3.10</li>
+<li>PyTorch ≥2.4.1</li>
+</ul>
+</section>
+<section id="sec-installation-methods" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="sec-installation-methods"><span class="header-section-number">2</span> Installation Methods</h2>
+<section id="sec-pypi" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="sec-pypi"><span class="header-section-number">2.1</span> PyPI Installation (Recommended)</h3>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip3</span> install <span class="at">--no-build-isolation</span> axolotl<span class="pp">[</span><span class="ss">flash</span><span class="pp">-</span><span class="ss">attn,deepspeed</span><span class="pp">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We use <code>--no-build-isolation</code> in order to detect the installed PyTorch version (if installed) in order not to clobber it, and so that we set the correct version of dependencies that are specific to the PyTorch version or other installed co-dependencies.</p>
+</section>
+<section id="sec-edge-build" class="level3" data-number="2.2">
+<h3 data-number="2.2" class="anchored" data-anchor-id="sec-edge-build"><span class="header-section-number">2.2</span> Edge/Development Build</h3>
+<p>For the latest features between releases:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/axolotl-ai-cloud/axolotl.git</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> axolotl</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip3</span> install packaging ninja</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">pip3</span> install <span class="at">--no-build-isolation</span> <span class="at">-e</span> <span class="st">'.[flash-attn,deepspeed]'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="sec-docker" class="level3" data-number="2.3">
+<h3 data-number="2.3" class="anchored" data-anchor-id="sec-docker"><span class="header-section-number">2.3</span> Docker</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--gpus</span> <span class="st">'"all"'</span> <span class="at">--rm</span> <span class="at">-it</span> axolotlai/axolotl:main-latest</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For development with Docker:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose up <span class="at">-d</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Advanced Docker Configuration
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--privileged</span> <span class="at">--gpus</span> <span class="st">'"all"'</span> <span class="at">--shm-size</span> 10g <span class="at">--rm</span> <span class="at">-it</span> <span class="dt">\</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--name</span> axolotl <span class="at">--ipc</span><span class="op">=</span>host <span class="dt">\</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--ulimit</span> memlock=-1 <span class="at">--ulimit</span> stack=67108864 <span class="dt">\</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--mount</span> type=bind,src=<span class="st">"</span><span class="va">${PWD}</span><span class="st">"</span>,target=/workspace/axolotl <span class="dt">\</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">-v</span> <span class="va">${HOME}</span>/.cache/huggingface:/root/.cache/huggingface <span class="dt">\</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  axolotlai/axolotl:main-latest</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="sec-cloud" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="sec-cloud"><span class="header-section-number">3</span> Cloud Environments</h2>
+<section id="sec-cloud-gpu" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="sec-cloud-gpu"><span class="header-section-number">3.1</span> Cloud GPU Providers</h3>
+<p>For providers supporting Docker:</p>
+<ul>
+<li>Use <code>axolotlai/axolotl-cloud:main-latest</code></li>
+<li>Available on:
+<ul>
+<li><a href="https://latitude.sh/blueprint/989e0e79-3bf6-41ea-a46b-1f246e309d5c">Latitude.sh</a></li>
+<li><a href="https://jarvislabs.ai/templates/axolotl">JarvisLabs.ai</a></li>
+<li><a href="https://runpod.io/gsc?template=v2ickqhz9s&amp;ref=6i7fkpdz">RunPod</a></li>
+</ul></li>
+</ul>
+</section>
+<section id="sec-colab" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="sec-colab"><span class="header-section-number">3.2</span> Google Colab</h3>
+<p>Use our <a href="../examples/colab-notebooks/colab-axolotl-example.html">example notebook</a>.</p>
+</section>
+</section>
+<section id="sec-platform-specific" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="sec-platform-specific"><span class="header-section-number">4</span> Platform-Specific Instructions</h2>
+<section id="sec-macos" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="sec-macos"><span class="header-section-number">4.1</span> macOS</h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip3</span> install <span class="at">--no-build-isolation</span> <span class="at">-e</span> <span class="st">'.'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>See <a href="#sec-troubleshooting" class="quarto-xref">Section&nbsp;6</a> for Mac-specific issues.</p>
+</section>
+<section id="sec-windows" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="sec-windows"><span class="header-section-number">4.2</span> Windows</h3>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -479,38 +566,29 @@ Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Due to breaking changes in transformers <code>v4.48.0</code>, users will need to downgrade to <code>&lt;=v4.47.1</code> to use this patch.</p>
-<p>This will later be deprecated in favor of <a href="../docs/lora_optims.html">LoRA Optimizations</a>.</p>
+<p>We recommend using WSL2 (Windows Subsystem for Linux) or Docker.</p>
 </div>
 </div>
 </section>
-<section id="installation" class="level3">
-<h3 class="anchored" data-anchor-id="installation">Installation</h3>
-<p>The following will install the correct unsloth and extras from source.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/unsloth_install.py <span class="kw">|</span> <span class="fu">sh</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="usage" class="level3">
-<h3 class="anchored" data-anchor-id="usage">Usage</h3>
-<p>Axolotl exposes a few configuration options to try out unsloth and get most of the performance gains.</p>
-<p>Our unsloth integration is currently limited to the following model architectures: - llama</p>
-<p>These options are specific to LoRA finetuning and cannot be used for multi-GPU finetuning</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unsloth_lora_mlp</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">unsloth_lora_qkv</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">unsloth_lora_o</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>These options are composable and can be used with multi-gpu finetuning</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unsloth_cross_entropy_loss</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">unsloth_rms_norm</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">unsloth_rope</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="sec-env-managers" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="sec-env-managers"><span class="header-section-number">5</span> Environment Managers</h2>
+<section id="sec-conda" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="sec-conda"><span class="header-section-number">5.1</span> Conda/Pip venv</h3>
+<ol type="1">
+<li><p>Install Python ≥3.10</p></li>
+<li><p>Install PyTorch: https://pytorch.org/get-started/locally/</p></li>
+<li><p>Install Axolotl:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip3</span> install packaging</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip3</span> install <span class="at">--no-build-isolation</span> <span class="at">-e</span> <span class="st">'.[flash-attn,deepspeed]'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>(Optional) Login to Hugging Face:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">huggingface-cli</span> login</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ol>
 </section>
-<section id="limitations" class="level3">
-<h3 class="anchored" data-anchor-id="limitations">Limitations</h3>
-<ul>
-<li>Single GPU only; e.g.&nbsp;no multi-gpu support</li>
-<li>No deepspeed or FSDP support (requires multi-gpu)</li>
-<li>LoRA + QLoRA support only. No full fine tunes or fp8 support.</li>
-<li>Limited model architecture support. Llama, Phi, Gemma, Mistral only</li>
-<li>No MoE support.</li>
-</ul>
+</section>
+<section id="sec-troubleshooting" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="sec-troubleshooting"><span class="header-section-number">6</span> Troubleshooting</h2>
+<p>If you encounter installation issues, see our <a href="../docs/faq.html">FAQ</a> and <a href="../docs/debugging.html">Debugging Guide</a>.</p>
 
 
 </section>

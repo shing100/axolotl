@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Hyper-optimized QLoRA finetuning for single GPUs">
+<meta name="description" content="How to use Axolotl with Ray Train">
 
-<title>Unsloth – Axolotl</title>
+<title>Ray Train – Axolotl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -130,7 +130,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fsdp_qlora.html">Advanced Features</a></li><li class="breadcrumb-item"><a href="../docs/unsloth.html">Unsloth</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/multi-gpu.html">Deployments</a></li><li class="breadcrumb-item"><a href="../docs/ray-integration.html">Ray Train</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -253,7 +253,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/ray-integration.html" class="sidebar-item-text sidebar-link">
+  <a href="../docs/ray-integration.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Ray Train</span></a>
   </div>
 </li>
@@ -358,7 +358,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/unsloth.html" class="sidebar-item-text sidebar-link active">
+  <a href="../docs/unsloth.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Unsloth</span></a>
   </div>
 </li>
@@ -432,24 +432,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
-  <li><a href="#installation" id="toc-installation" class="nav-link" data-scroll-target="#installation">Installation</a></li>
-  <li><a href="#usage" id="toc-usage" class="nav-link" data-scroll-target="#usage">Usage</a></li>
-  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
+  <li><a href="#ray-cluster-setup" id="toc-ray-cluster-setup" class="nav-link active" data-scroll-target="#ray-cluster-setup">Ray cluster setup</a></li>
+  <li><a href="#sanity-check" id="toc-sanity-check" class="nav-link" data-scroll-target="#sanity-check">Sanity check</a></li>
+  <li><a href="#configuring-training-with-ray-train" id="toc-configuring-training-with-ray-train" class="nav-link" data-scroll-target="#configuring-training-with-ray-train">Configuring training with Ray Train</a></li>
+  <li><a href="#launching-training" id="toc-launching-training" class="nav-link" data-scroll-target="#launching-training">Launching training</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fsdp_qlora.html">Advanced Features</a></li><li class="breadcrumb-item"><a href="../docs/unsloth.html">Unsloth</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/multi-gpu.html">Deployments</a></li><li class="breadcrumb-item"><a href="../docs/ray-integration.html">Ray Train</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Unsloth</h1>
+<h1 class="title">Ray Train</h1>
 </div>
 
 <div>
   <div class="description">
-    Hyper-optimized QLoRA finetuning for single GPUs
+    How to use Axolotl with Ray Train
   </div>
 </div>
 
@@ -466,51 +466,71 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="overview" class="level3">
-<h3 class="anchored" data-anchor-id="overview">Overview</h3>
-<p>Unsloth provides hand-written optimized kernels for LLM finetuning that slightly improve speed and VRAM over standard industry baselines.</p>
-<div class="callout callout-style-default callout-important callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Important
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Due to breaking changes in transformers <code>v4.48.0</code>, users will need to downgrade to <code>&lt;=v4.47.1</code> to use this patch.</p>
-<p>This will later be deprecated in favor of <a href="../docs/lora_optims.html">LoRA Optimizations</a>.</p>
-</div>
-</div>
+<p>Axolotl supports using Ray as an alternative to <code>accelerate</code> for orchestrating training. This is especially useful for multi-node training since you only have to setup code and dependencies in a single node and launch training as if you were using a single node.</p>
+<p>With the <code>--use-ray</code> CLI flag, Axolotl will use Ray Train’s <a href="https://docs.ray.io/en/latest/train/api/doc/ray.train.torch.TorchTrainer.html#ray.train.torch.TorchTrainer"><code>TorchTrainer</code></a> to run training.</p>
+<section id="ray-cluster-setup" class="level2">
+<h2 class="anchored" data-anchor-id="ray-cluster-setup">Ray cluster setup</h2>
+<p>A prerequisite using the Ray Train integration is to setup a Ray cluster on your desired node(s). For a detailed guide on how you can get started with ray clusters, check the official Ray docs <a href="https://docs.ray.io/en/latest/cluster/getting-started.html">here</a>.</p>
+<p>Every Ray cluster has one <em>head</em> node and a set of worker nodes. The head node is just like any other worker node, but it also runs certain special processes related to scheduling and orchestration. Ray-enabled scripts are run on the head node and depending on the resources (number of CPUs, GPUs, etc) they request, will be scheduled to run certain tasks on the worker nodes. For more on key concepts behind a Ray cluster, you can refer this <a href="https://docs.ray.io/en/latest/cluster/key-concepts.html#cluster-key-concepts">doc</a>.</p>
 </section>
-<section id="installation" class="level3">
-<h3 class="anchored" data-anchor-id="installation">Installation</h3>
-<p>The following will install the correct unsloth and extras from source.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/unsloth_install.py <span class="kw">|</span> <span class="fu">sh</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="sanity-check" class="level2">
+<h2 class="anchored" data-anchor-id="sanity-check">Sanity check</h2>
+<p>To run a sanity check on whether your ray cluster is setup properly, execute the following on the head node:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ray</span> status</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The output should have a summary of your Ray cluster - list of all the nodes in your cluster, the number of CPUs and GPUs in your cluster, etc. For example, if you have a cluster with 1 CPU-only head node and 2 4xL40S worker nodes, the output can look like this:</p>
+<pre><code>Node status
+---------------------------------------------------------------
+Active:
+ 1 head
+Idle:
+ 2 4xL40S:48CPU-384GB
+Pending:
+ (no pending nodes)
+Recent failures:
+ (no failures)
+
+Resources
+---------------------------------------------------------------
+Usage:
+ 0.0/96.0 CPU
+ 0.0/8.0 GPU
+ 0B/800.00GiB memory
+ 0B/229.57GiB object_store_memory
+
+Demands:
+ (no resource demands)</code></pre>
+<p>You should also be able to see the same on the <a href="https://docs.ray.io/en/latest/ray-observability/getting-started.html">Ray dashboard</a>.</p>
 </section>
-<section id="usage" class="level3">
-<h3 class="anchored" data-anchor-id="usage">Usage</h3>
-<p>Axolotl exposes a few configuration options to try out unsloth and get most of the performance gains.</p>
-<p>Our unsloth integration is currently limited to the following model architectures: - llama</p>
-<p>These options are specific to LoRA finetuning and cannot be used for multi-GPU finetuning</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unsloth_lora_mlp</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">unsloth_lora_qkv</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">unsloth_lora_o</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>These options are composable and can be used with multi-gpu finetuning</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unsloth_cross_entropy_loss</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">unsloth_rms_norm</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">unsloth_rope</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="limitations" class="level3">
-<h3 class="anchored" data-anchor-id="limitations">Limitations</h3>
+<section id="configuring-training-with-ray-train" class="level2">
+<h2 class="anchored" data-anchor-id="configuring-training-with-ray-train">Configuring training with Ray Train</h2>
+<p>You can find an example configuration at <code>configs/llama-3/lora-1b-ray.yaml</code>.</p>
+<p>The key parameters to note here are:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">use_ray</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ray_num_workers</span><span class="kw">:</span><span class="at"> </span><span class="dv">4</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># optional</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">resources_per_worker</span><span class="kw">:</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">GPU</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <ul>
-<li>Single GPU only; e.g.&nbsp;no multi-gpu support</li>
-<li>No deepspeed or FSDP support (requires multi-gpu)</li>
-<li>LoRA + QLoRA support only. No full fine tunes or fp8 support.</li>
-<li>Limited model architecture support. Llama, Phi, Gemma, Mistral only</li>
-<li>No MoE support.</li>
+<li><code>use_ray</code>: This is the flag that enables the Ray Train integration. You can either use the corresponding <code>--use-ray</code> flag in the CLI or set <code>use_ray</code> in the config file.</li>
+<li><code>ray_num_workers</code>: This is the number of workers/GPUs to use for training.</li>
+<li><code>resources_per_worker</code>: This is the Ray <a href="https://docs.ray.io/en/latest/ray-core/scheduling/resources.html">resource request</a> for each worker. This can be used to request a specific GPU type or a custom resource for each worker. For example, if your ray cluster has GPUs of different types, and you only want to use NVIDIA L40S GPUs, you can do</li>
 </ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">resources_per_worker</span><span class="kw">:</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="at">    accelerator_type</span><span class="fu">:L40S</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.001</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="launching-training" class="level2">
+<h2 class="anchored" data-anchor-id="launching-training">Launching training</h2>
+<p>You can simply run the following command on the head node:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">axolotl</span> train examples/llama-3/lora-1b-ray.yml <span class="at">--use-ray</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This will launch training on the head node and workers will be scheduled automatically by Ray Train to run on the appropriate head or worker nodes.</p>
+<p>You can also monitor training progress on the Ray dashboard.</p>
+<p>Coming back to the example on a Ray cluster with 1 head node and 2 4xL40S worker nodes, let’s say you want to make use of all 8 GPUs. You would be able to just set <code>ray_num_workers: 8</code> and run the previous command. The Cluster tab will show the following:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/ray-cluster-dashboard.png" class="img-fluid figure-img"></p>
+<figcaption>Ray dashboard</figcaption>
+</figure>
+</div>
 
 
 </section>
